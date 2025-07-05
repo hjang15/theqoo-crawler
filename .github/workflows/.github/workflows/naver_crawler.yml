@@ -2,14 +2,15 @@ name: naver-crawler
 
 on:
   schedule:
-    - cron: '0 23 * * *'  # 오전 8시 KST (23시 UTC)
+    - cron: '0 23 * * *'  # KST 오전 8시 = UTC 전날 23시
   workflow_dispatch:
 
 jobs:
   run-crawler:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout repo
+    - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Set up Python
