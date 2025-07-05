@@ -5,7 +5,7 @@ import smtplib
 from email.mime.text import MIMEText
 import time
 from datetime import datetime
-import os  # GitHub Secrets 읽기용
+import os
 
 # === 브랜드 & 감성 분석 ===
 def detect_brand(title):
@@ -114,16 +114,23 @@ def send_gmail_email(subject, html_body):
     receiver = os.environ.get("GMAIL_RECEIVER")
     app_password = os.environ.get("GMAIL_APP_PASSWORD")
 
+    if not sender or not receiver or not app_password:
+        print("❌ Gmail credentials (GMAIL_SENDER, GMAIL_RECEIVER, GMAIL_APP_PASSWORD) are missing!")
+        exit(1)
+
     msg = MIMEText(html_body, 'html')
     msg['Subject'] = subject
     msg['From'] = sender
     msg['To'] = receiver
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-        server.login(sender, app_password)
-        server.send_message(msg)
-
-    print("✅ 메일 발송 완료")
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(sender, app_password)
+            server.send_message(msg)
+        print("✅ 메일 발송 완료")
+    except Exception as e:
+        print(f"❌ 메일 발송 실패: {e}")
+        exit(1)
 
 # === 메인 ===
 def main():
