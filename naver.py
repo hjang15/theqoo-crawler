@@ -8,11 +8,11 @@ import os
 import time
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0"
 }
 
 def crawl_naver_blog():
-    url = "https://search.naver.com/search.naver?ssc=tab.blog.all&query=로라%20메르시에&sm=tab_opt&nso=so%3Add%2Cp%3A1d"
+    url = "https://search.naver.com/search.naver?ssc=tab.blog.all&query=로라%20메르시에&sm=tab_opt&nso=so%3Add%2Cp%3A1w"
     res = requests.get(url, headers=HEADERS)
     soup = BeautifulSoup(res.text, 'html.parser')
     posts = []
@@ -29,7 +29,7 @@ def crawl_naver_blog():
     return posts
 
 def crawl_naver_cafe():
-    url = "https://search.naver.com/search.naver?cafe_where=articleg&date_option=2&nso_open=1&prdtype=0&query=로라+메르시에&sm=mtb_opt&ssc=tab.cafe.all&st=date&stnm=date&opt_tab=0&nso=so%3Add%2Cp%3A1d"
+    url = "https://search.naver.com/search.naver?cafe_where=articleg&date_option=2&nso_open=1&prdtype=0&query=로라+메르시에&sm=mtb_opt&ssc=tab.cafe.all&st=date&stnm=date&opt_tab=0&nso=so%3Add%2Cp%3A1w"
     res = requests.get(url, headers=HEADERS)
     soup = BeautifulSoup(res.text, 'html.parser')
     posts = []
@@ -50,16 +50,15 @@ def generate_email_body(df):
         return "<p>오늘 수집된 데이터가 없습니다.</p>"
     
     body = """
-    <p>📝 오늘 네이버 블로그 & 카페 게시글</p>
+    <p>📝 오늘 네이버 블로그 & 카페 게시글 (최근 1주일)</p>
     <table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse; width:100%;">
         <tr><th>구분</th><th>제목</th><th>날짜</th><th>링크</th></tr>
     """
     for row in df.itertuples():
-        title_short = (row.제목[:50] + '...') if len(row.제목) > 50 else row.제목
         body += f"""
         <tr>
             <td>{row.구분}</td>
-            <td>{title_short}</td>
+            <td>{row.제목[:50]}{'...' if len(row.제목)>50 else ''}</td>
             <td>{row.날짜}</td>
             <td><a href="{row.링크}">바로가기</a></td>
         </tr>
@@ -94,7 +93,7 @@ def main():
     df.to_csv(f'naver_posts_{today}.csv', index=False, encoding='utf-8-sig')
 
     html_body = generate_email_body(df)
-    send_gmail(f"네이버 블로그/카페 크롤링 결과 - {today}", html_body)
+    send_gmail(f"네이버 블로그/카페 크롤링 결과 (1주일) - {today}", html_body)
 
 if __name__ == "__main__":
     main()
