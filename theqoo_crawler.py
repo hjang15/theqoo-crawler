@@ -13,7 +13,7 @@ def detect_brand(title):
         return '로라메르시에'
     elif '베어미네랄' in title or '베어 미네랄' in title:
         return '베어미네랄'
-    else
+    else:
         return None
 
 def detect_sentiment(title):
