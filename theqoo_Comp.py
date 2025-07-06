@@ -64,7 +64,7 @@ def detect_sentiment(title):
 
 # === 크롤링 ===
 def crawl_theqoo():
-    urls = [f"https://theqoo.net/beauty?page={i}" for i in range(1, 31)]
+    urls = [f"https://theqoo.net/beauty?page={i}" for i in range(1, 101)]
     matching_posts = []
 
     for url in urls:
