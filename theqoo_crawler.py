@@ -91,12 +91,44 @@ def crawl_theqoo():
                         '브랜드': brand
                     })
 
-        time.sleep(1)  # 1초로 여유
+        time.sleep(1)
 
     return pd.DataFrame(matching_posts)
 
 # === HTML 메일 본문 ===
-# 그대로 OK
+def generate_email_body_html(df):
+    if df.empty:
+        return "<p>이번에 크롤링된 게시글이 없습니다.</p>"
+
+    body = """
+    <p>더쿠 게시글 크롤링 결과</p>
+    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+        <tr>
+            <th>글번호</th>
+            <th>제목</th>
+            <th>댓글수</th>
+            <th>조회수</th>
+            <th>감성</th>
+            <th>작성시간</th>
+            <th>링크</th>
+        </tr>
+    """
+    max_title_length = 50
+    for row in df.itertuples():
+        title_short = (row.제목[:max_title_length] + '...') if len(row.제목) > max_title_length else row.제목
+        body += f"""
+        <tr>
+            <td>{row.글번호}</td>
+            <td>{title_short}</td>
+            <td>{row.댓글수}</td>
+            <td>{row.조회수}</td>
+            <td>{row.감성}</td>
+            <td>{row.작성시간}</td>
+            <td><a href="{row.링크}">바로가기</a></td>
+        </tr>
+        """
+    body += "</table>"
+    return body
 
 # === Gmail 발송 ===
 def send_gmail_email(subject, html_body):
