@@ -4,7 +4,7 @@ import pandas as pd
 import smtplib
 from email.mime.text import MIMEText
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import os
 import sys
 
@@ -13,7 +13,7 @@ def detect_brand(title):
     brand_keywords = {
         '로라 메르시에': ['로라 메르시에', '로라메르시에', '로라'],
         '베어미네랄': ['베어미네랄', '베어 미네랄'],
-        '아워 글래스': ['아워 글래스', '아워'],
+        '아워 글래스': ['아워 글래스', '아워', '아워 글라스'],
         '나스': ['나스'],
         '맥': ['맥'],
         '바비 브라운': ['바비 브라운', '바비'],
@@ -96,12 +96,14 @@ def crawl_theqoo():
 
     return pd.DataFrame(matching_posts)
 
-# === HTML 메일 본문 ===
+# === 메일 본문 ===
 def generate_email_body_html(df):
     if df.empty:
         return "<p>이번에 크롤링된 게시글이 없습니다.</p>"
 
-    today_str = datetime.now().strftime("%Y-%m-%d %H:%M 기준")
+    kst = timezone(timedelta(hours=9))
+    today_str = datetime.now(kst).strftime("%Y-%m-%d %H:%M 기준")
+
     brand_order = [
         '로라 메르시에', '베어미네랄', '아워 글래스',
         '나스', '맥', '바비 브라운', '메이크업 포에버',
@@ -112,6 +114,7 @@ def generate_email_body_html(df):
     body = f"""
     <p>더쿠 게시글 크롤링 결과</p>
     <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 page 1~31, {today_str}</small></p>
+    <p><small>-. 참고: 다수 브랜드 언급 시 한 브랜드 결과값에만 노출됩니다 (상위 표 기준으로 노출)</small></p>
     """
 
     for brand in brand_order:
@@ -151,7 +154,7 @@ def generate_email_body_html(df):
 
     return body
 
-# === Gmail 발송 ===
+# === 메일 발송 ===
 def send_gmail_email(subject, html_body):
     sender = os.environ.get("GMAIL_SENDER")
     receiver = os.environ.get("GMAIL_RECEIVER")
@@ -184,7 +187,7 @@ def main():
     print(f"✅ CSV 저장 완료: {csv_file}")
 
     html_body = generate_email_body_html(df)
-    send_gmail_email(f"[크롤링] 더쿠 게시글 크롤링 결과 - {today_str}", html_body)
+    send_gmail_email(f"[크롤링]더쿠 게시글 크롤링 결과 - {today_str}", html_body)
 
 if __name__ == "__main__":
     main()
