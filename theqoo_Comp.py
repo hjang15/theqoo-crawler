@@ -11,19 +11,19 @@ import sys
 # === 브랜드 & 감성 분석 ===
 def detect_brand(title):
     brand_keywords = {
+        '로라 메르시에': ['로라 메르시에', '로라메르시에', '로라'],
+        '베어미네랄': ['베어미네랄', '베어 미네랄'],
+        '아워 글래스': ['아워 글래스', '아워'],
         '나스': ['나스'],
+        '맥': ['맥'],
+        '바비 브라운': ['바비 브라운', '바비'],
         '메이크업 포에버': ['메이크업 포에버', '메포'],
         '베네피트': ['베네피트'],
-        '바비 브라운': ['바비 브라운', '바비'],
-        '맥': ['맥'],
-        '샬롯 틸버리': ['샬롯 틸버리', '샬롯'],
         '아르마니': ['아르마니'],
         '지방시': ['지방시'],
-        '입생로랑': ['입생로랑', '입생'],
-        '디올': ['디올'],
+        '샬롯 틸버리': ['샬롯 틸버리', '샬롯'],
         '샤넬': ['샤넬'],
-        '로라메르시에': ['로라 메르시에', '로라메르시에', '로라'],
-        '베어미네랄': ['베어 미네랄', '베어미네랄']
+        '디올': ['디올']
     }
     for brand, keywords in brand_keywords.items():
         if any(keyword in title for keyword in keywords):
@@ -32,28 +32,18 @@ def detect_brand(title):
 
 def detect_sentiment(title):
     positive_words = [
-        '추천', '최고', '좋다', '만족', '예쁨',
-        '대박', '존예', '꿀템', '인생템', '가성비',
-        '갓성비', '짱좋다', '짱짱', '최애', '찐',
-        '감동', '개이쁨', '예뻐', '넘좋다', '맘에듦',
-        '강추', '완전좋음', '만족도최고', '신세계', '갓템',
-        '대존예', '취저', '이쁨', '핵좋음', '완전예쁨',
-        '역대급', '레전드', '인생아이템', '넘예', '인정템',
-        '신박하다', '기대이상', '핵만족', '예쁨주의', '취향저격',
-        '엄지척', '하트백만개', '질샌다', '너무좋음', '대박템',
-        '가심비갑', '반함', '대존맛', '예쁨주의보', '소장각',
-        '갓템인정', '핵예쁨'
+        '추천', '최고', '좋다', '만족', '예쁨', '대박', '존예', '꿀템', '인생템',
+        '가성비', '갓성비', '짱좋다', '짱짱', '최애', '찐', '감동', '개이쁨',
+        '예뻐', '넘좋다', '맘에듦', '강추', '완전좋음', '만족도최고', '신세계',
+        '갓템', '대존예', '취저', '이쁨', '핵좋음', '완전예쁨', '역대급', '레전드',
+        '인생아이템', '넘예', '인정템', '신박하다', '기대이상', '핵만족', '예쁨주의',
+        '취향저격'
     ]
     negative_words = [
-        '별로', '실망', '최악', '후회', '불만',
-        '비추', '헐', '노답', '구림', '별로였음',
-        '별로다', '망함', '최악임', '다신안삼',
-        '돈아깝', '별점1', '후회됨', '진심별로', '실패',
-        '별루', '별로였어요', '비추천', '쓰레기', '별점깎음',
-        '헛돈', '돈버림', '구매후회', '완전별로', '진심실망',
-        '별1개', '다신안사', '실패작', '비싸기만함', '최악의선택',
-        '돈값못함', '그저그럼', '평타이하', '아쉬움', '아깝다',
-        '불호', '전혀추천안함'
+        '별로', '실망', '최악', '후회', '불만', '비추', '헐', '노답', '구림',
+        '별로였음', '별로다', '망함', '최악임', '다신안삼', '돈아깝', '별점1',
+        '후회됨', '진심별로', '실패', '별루', '비추천', '쓰레기', '헛돈',
+        '돈버림', '구매후회', '완전별로', '진심실망', '비싸기만함'
     ]
     if any(word in title for word in positive_words):
         return '긍정'
@@ -64,7 +54,7 @@ def detect_sentiment(title):
 
 # === 크롤링 ===
 def crawl_theqoo():
-    urls = [f"https://theqoo.net/beauty?page={i}" for i in range(1, 101)]
+    urls = [f"https://theqoo.net/beauty?page={i}" for i in range(1, 31)]
     matching_posts = []
 
     for url in urls:
@@ -104,19 +94,31 @@ def crawl_theqoo():
 
         time.sleep(1)
 
-    df = pd.DataFrame(matching_posts)
-    return df
+    return pd.DataFrame(matching_posts)
 
-# === HTML 메일 본문 (브랜드별 표) ===
+# === HTML 메일 본문 ===
 def generate_email_body_html(df):
     if df.empty:
         return "<p>이번에 크롤링된 게시글이 없습니다.</p>"
 
-    body = "<p>더쿠 경쟁사 + 로라/베어미네랄 게시글 크롤링 결과</p>"
+    today_str = datetime.now().strftime("%Y-%m-%d %H:%M 기준")
+    brand_order = [
+        '로라 메르시에', '베어미네랄', '아워 글래스',
+        '나스', '맥', '바비 브라운', '메이크업 포에버',
+        '베네피트', '아르마니', '지방시', '샬롯 틸버리',
+        '샤넬', '디올'
+    ]
 
-    brands = df['브랜드'].unique()
-    for brand in sorted(brands):
-        brand_df = df[df['브랜드'] == brand].sort_values(by='작성시간', ascending=False)
+    body = f"""
+    <p>더쿠 게시글 크롤링 결과</p>
+    <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 page 1~31, {today_str}</small></p>
+    """
+
+    for brand in brand_order:
+        df_brand = df[df['브랜드'] == brand]
+        if df_brand.empty:
+            continue
+
         body += f"<h3>{brand}</h3>"
         body += """
         <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
@@ -130,8 +132,9 @@ def generate_email_body_html(df):
                 <th>링크</th>
             </tr>
         """
+
         max_title_length = 50
-        for row in brand_df.itertuples():
+        for row in df_brand.itertuples():
             title_short = (row.제목[:max_title_length] + '...') if len(row.제목) > max_title_length else row.제목
             body += f"""
             <tr>
@@ -155,7 +158,7 @@ def send_gmail_email(subject, html_body):
     app_password = os.environ.get("GMAIL_APP_PASSWORD")
 
     if not sender or not receiver or not app_password:
-        print("❌ Gmail credentials (GMAIL_SENDER, GMAIL_RECEIVER, GMAIL_APP_PASSWORD) are missing!")
+        print("❌ Gmail credentials are missing!")
         sys.exit(1)
 
     msg = MIMEText(html_body, 'html')
@@ -181,7 +184,7 @@ def main():
     print(f"✅ CSV 저장 완료: {csv_file}")
 
     html_body = generate_email_body_html(df)
-    send_gmail_email(f"더쿠 경쟁사 + 로라/베어미네랄 게시글 크롤링 결과 - {today_str}", html_body)
+    send_gmail_email(f"[크롤링] 더쿠 게시글 크롤링 결과 - {today_str}", html_body)
 
 if __name__ == "__main__":
     main()
