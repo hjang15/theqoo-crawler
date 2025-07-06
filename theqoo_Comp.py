@@ -21,7 +21,9 @@ def detect_brand(title):
         '지방시': ['지방시'],
         '입생로랑': ['입생로랑', '입생'],
         '디올': ['디올'],
-        '샤넬': ['샤넬']
+        '샤넬': ['샤넬'],
+        '로라메르시에': ['로라 메르시에', '로라메르시에', '로라'],
+        '베어미네랄': ['베어 미네랄', '베어미네랄']
     }
     for brand, keywords in brand_keywords.items():
         if any(keyword in title for keyword in keywords):
@@ -103,44 +105,47 @@ def crawl_theqoo():
         time.sleep(1)
 
     df = pd.DataFrame(matching_posts)
-    df = df.sort_values(by=['브랜드', '작성시간'], ascending=[True, False])
     return df
 
-# === HTML 메일 본문 ===
+# === HTML 메일 본문 (브랜드별 표) ===
 def generate_email_body_html(df):
     if df.empty:
         return "<p>이번에 크롤링된 게시글이 없습니다.</p>"
 
-    body = """
-    <p>더쿠 경쟁사 게시글 크롤링 결과</p>
-    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-        <tr>
-            <th>브랜드</th>
-            <th>글번호</th>
-            <th>제목</th>
-            <th>댓글수</th>
-            <th>조회수</th>
-            <th>감성</th>
-            <th>작성시간</th>
-            <th>링크</th>
-        </tr>
-    """
-    max_title_length = 50
-    for row in df.itertuples():
-        title_short = (row.제목[:max_title_length] + '...') if len(row.제목) > max_title_length else row.제목
-        body += f"""
-        <tr>
-            <td>{row.브랜드}</td>
-            <td>{row.글번호}</td>
-            <td>{title_short}</td>
-            <td>{row.댓글수}</td>
-            <td>{row.조회수}</td>
-            <td>{row.감성}</td>
-            <td>{row.작성시간}</td>
-            <td><a href="{row.링크}">바로가기</a></td>
-        </tr>
+    body = "<p>더쿠 경쟁사 + 로라/베어미네랄 게시글 크롤링 결과</p>"
+
+    brands = df['브랜드'].unique()
+    for brand in sorted(brands):
+        brand_df = df[df['브랜드'] == brand].sort_values(by='작성시간', ascending=False)
+        body += f"<h3>{brand}</h3>"
+        body += """
+        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+            <tr>
+                <th>글번호</th>
+                <th>제목</th>
+                <th>댓글수</th>
+                <th>조회수</th>
+                <th>감성</th>
+                <th>작성시간</th>
+                <th>링크</th>
+            </tr>
         """
-    body += "</table>"
+        max_title_length = 50
+        for row in brand_df.itertuples():
+            title_short = (row.제목[:max_title_length] + '...') if len(row.제목) > max_title_length else row.제목
+            body += f"""
+            <tr>
+                <td>{row.글번호}</td>
+                <td>{title_short}</td>
+                <td>{row.댓글수}</td>
+                <td>{row.조회수}</td>
+                <td>{row.감성}</td>
+                <td>{row.작성시간}</td>
+                <td><a href="{row.링크}">바로가기</a></td>
+            </tr>
+            """
+        body += "</table><br>"
+
     return body
 
 # === Gmail 발송 ===
@@ -176,7 +181,7 @@ def main():
     print(f"✅ CSV 저장 완료: {csv_file}")
 
     html_body = generate_email_body_html(df)
-    send_gmail_email(f"더쿠 경쟁사 게시글 크롤링 결과 - {today_str}", html_body)
+    send_gmail_email(f"더쿠 경쟁사 + 로라/베어미네랄 게시글 크롤링 결과 - {today_str}", html_body)
 
 if __name__ == "__main__":
     main()
