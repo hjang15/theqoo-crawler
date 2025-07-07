@@ -113,7 +113,7 @@ def generate_email_body_html(df):
 
     body = f"""
     <p>더쿠 게시글 크롤링 결과</p>
-    <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 page 1~31, {today_str}</small></p>
+    <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 page 1~31, {today_str} (한국시간)</small></p>
     <p><small>-. 참고: 다수 브랜드 언급 시 한 브랜드 결과값에만 노출됩니다 (상위 표 기준으로 노출)</small></p>
     """
 
@@ -157,22 +157,24 @@ def generate_email_body_html(df):
 # === 메일 발송 ===
 def send_gmail_email(subject, html_body):
     sender = os.environ.get("GMAIL_SENDER")
-    receiver = os.environ.get("GMAIL_RECEIVER")
+    receivers = os.environ.get("GMAIL_RECEIVER")
     app_password = os.environ.get("GMAIL_APP_PASSWORD")
 
-    if not sender or not receiver or not app_password:
+    if not sender or not receivers or not app_password:
         print("❌ Gmail credentials are missing!")
         sys.exit(1)
+
+    receiver_list = [email.strip() for email in receivers.split(",")]
 
     msg = MIMEText(html_body, 'html')
     msg['Subject'] = subject
     msg['From'] = sender
-    msg['To'] = receiver
+    msg['To'] = "undisclosed-recipients:;"  # 숨김 참조처럼
 
     try:
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
             server.login(sender, app_password)
-            server.send_message(msg)
+            server.sendmail(sender, receiver_list, msg.as_string())
         print("✅ 메일 발송 완료")
     except Exception as e:
         print(f"❌ 메일 발송 실패: {e}")
