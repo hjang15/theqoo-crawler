@@ -113,7 +113,7 @@ def generate_email_body_html(df):
 
     body = f"""
     <p>더쿠 게시글 크롤링 결과</p>
-    <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 page 1~31, {today_str} (한국시간)</small></p>
+    <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 page 1~21, {today_str} (한국시간)</small></p>
     <p><small>-. 참고: 다수 브랜드 언급 시 한 브랜드 결과값에만 노출됩니다 (상위 표 기준으로 노출)</small></p>
     """
 
