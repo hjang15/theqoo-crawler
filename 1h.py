@@ -151,7 +151,7 @@ def generate_email_body_html(df):
     ]
 
     body = f"""
-    <p>더쿠 게시글 크롤링 결과(매일 9시, 12시, 16시)</p>
+    <p>더쿠 게시글 실시간 크롤링 결과(매일 9시, 12시, 16시)</p>
     <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 업데이트(매일 9시, 12시, 16시), {today_str} (한국시간)</small></p>
     <p><small>-. 신규로 업로드된 게시글만 업데이트에 포함되어 있으며, 전일 업데이트는 매일 8시에 발송됩니다.</small></p>
     <p><small>-. 소스: https://theqoo.net/beauty</small></p>
