@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import smtplib
-from email.mime_text import MIMEText
+from email.mime.text import MIMEText
 import time
 from datetime import datetime, timedelta, timezone
 import os
