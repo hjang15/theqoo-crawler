@@ -2,13 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import smtplib
-from email.mime.text import MIMEText
+from email.mime_text import MIMEText
 import time
 from datetime import datetime, timedelta, timezone
 import os
 import sys
 
 SEEN_FILE = "seen_posts.txt"
+
 
 def load_seen_posts(path=SEEN_FILE):
     """이미 본 글번호들을 파일에서 읽어와 set으로 반환"""
@@ -17,11 +18,17 @@ def load_seen_posts(path=SEEN_FILE):
     with open(path, "r", encoding="utf-8") as f:
         return set(line.strip() for line in f if line.strip())
 
+
 def save_seen_posts(seen_ids, path=SEEN_FILE):
     """업데이트된 글번호 set을 파일에 저장"""
+    def sort_key(pid: str):
+        # 숫자인 글번호는 숫자로 정렬, 그 외(공지 등)는 맨 뒤로
+        return int(pid) if pid.isdigit() else 10**12
+
     with open(path, "w", encoding="utf-8") as f:
-        for pid in sorted(seen_ids, key=lambda x: int(x)):
+        for pid in sorted(seen_ids, key=sort_key):
             f.write(f"{pid}\n")
+
 
 # === 브랜드 & 감성 분석 ===
 def detect_brand(title):
@@ -48,6 +55,7 @@ def detect_brand(title):
             return brand
     return None
 
+
 def detect_sentiment(title):
     positive_words = [
         '추천', '최고', '좋다', '만족', '예쁨', '대박', '존예', '꿀템', '인생템',
@@ -69,6 +77,7 @@ def detect_sentiment(title):
         return '부정'
     else:
         return '중립'
+
 
 # === 크롤링 ===
 def crawl_theqoo(seen_posts=None):
@@ -95,7 +104,7 @@ def crawl_theqoo(seen_posts=None):
             if no_tag and title_tag and time_tag and view_tag:
                 post_no = no_tag.get_text(strip=True)
 
-                # ✅ 이미 본 글이면 바로 건너뛰기
+                # ✅ 이미 본 글이면 건너뛰기
                 if post_no in seen_posts:
                     continue
 
@@ -124,6 +133,7 @@ def crawl_theqoo(seen_posts=None):
         time.sleep(1)
 
     return pd.DataFrame(matching_posts), updated_seen
+
 
 # === 메일 본문 ===
 def generate_email_body_html(df):
@@ -183,6 +193,7 @@ def generate_email_body_html(df):
 
     return body
 
+
 # === 메일 발송 ===
 def send_gmail_email(subject, html_body):
     sender = os.environ.get("GMAIL_SENDER")
@@ -209,6 +220,7 @@ def send_gmail_email(subject, html_body):
         print(f"❌ 메일 발송 실패: {e}")
         sys.exit(1)
 
+
 # === 메인 ===
 def main():
     # 1) 이전에 본 글번호 읽기
@@ -220,7 +232,7 @@ def main():
     # 3) seen_posts.txt 저장 (자동 업데이트)
     save_seen_posts(updated_seen)
 
-    # 4) 나머지는 기존과 동일
+    # 4) CSV 저장 + 메일 발송
     today_str = datetime.now().strftime("%Y%m%d")
     csv_file = f"theqoo_competitor_data_{today_str}.csv"
     df.to_csv(csv_file, index=False, encoding='utf-8-sig')
