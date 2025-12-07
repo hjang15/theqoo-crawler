@@ -2,7 +2,7 @@ name: theqoo_comp_crawler
 
 on:
   schedule:
-    - cron: '17 12 * * *'  # 한국 시간 21:07 = UTC 12:04
+    - cron: '*/5 * * * *'  # 5분마다
   workflow_dispatch:
 
 jobs:
