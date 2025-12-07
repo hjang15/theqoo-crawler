@@ -1,0 +1,29 @@
+name: theqoo_comp_crawler
+
+on:
+  schedule:
+    - cron: '25 12 * * *'  # 한국 시간 21:25 = UTC 12:25
+  workflow_dispatch:
+
+jobs:
+  run-crawler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 pandas
+
+      - name: Run crawler
+        env:
+          GMAIL_SENDER: ${{ secrets.GMAIL_SENDER }}
+          GMAIL_RECEIVER: ${{ secrets.GMAIL_RECEIVER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python theqoo_Comp.py
