@@ -1,19 +1,19 @@
 name: theqoo_comp_crawler
 
 on:
-schedule:
-  - cron: '32 1 * * *'  # 한국 시간 10:32 = UTC 01:32
-workflow_dispatch:
+  schedule:
+    - cron: '52 11 * * *'   # 한국시간 20:52 = UTC 11:52
+  workflow_dispatch:
 
 jobs:
   run-crawler:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
@@ -26,5 +26,4 @@ jobs:
           GMAIL_SENDER: ${{ secrets.GMAIL_SENDER }}
           GMAIL_RECEIVER: ${{ secrets.GMAIL_RECEIVER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-        run: |
-          python theqoo_Comp.py
+        run: python theqoo_Comp.py
