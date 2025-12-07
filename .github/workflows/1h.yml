@@ -1,13 +1,17 @@
 name: theqoo_comp_crawler
 
+permissions:
+  contents: write  # seen_posts.txt 커밋/푸시용 권한
+
 on:
   schedule:
-    - cron: '*/5 * * * *'  # 5분마다
+    - cron: '*/5 * * * *'  # 5분마다 (UTC 기준, KST랑은 9시간 차이)
   workflow_dispatch:
 
 jobs:
   run-crawler:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -26,7 +30,7 @@ jobs:
           GMAIL_SENDER: ${{ secrets.GMAIL_SENDER }}
           GMAIL_RECEIVER: ${{ secrets.GMAIL_RECEIVER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-        run: python 5mins.py
+        run: python 1h.py
 
       - name: Commit seen_posts.txt if changed
         run: |
