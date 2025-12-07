@@ -1,0 +1,42 @@
+name: theqoo_comp_crawler
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # 5분마다
+  workflow_dispatch:
+
+jobs:
+  run-crawler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 pandas
+          
+      - name: Run crawler
+        env:
+          GMAIL_SENDER: ${{ secrets.GMAIL_SENDER }}
+          GMAIL_RECEIVER: ${{ secrets.GMAIL_RECEIVER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python 5mins.py
+
+      - name: Commit seen_posts.txt if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [ -n "$(git status --porcelain seen_posts.txt)" ]; then
+            git add seen_posts.txt
+            git commit -m "Update seen_posts.txt [skip ci]" || echo "No changes to commit"
+            git push
+          else
+            echo "seen_posts.txt not changed."
+          fi
