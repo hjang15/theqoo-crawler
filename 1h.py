@@ -151,11 +151,10 @@ def generate_email_body_html(df):
     ]
 
     body = f"""
-    <p>더쿠 게시글 실시간 크롤링 결과(매일 9시, 12시, 16시)</p>
-    <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 업데이트(매일 9시, 12시, 16시), {today_str} (한국시간)</small></p>
-    <p><small>-. 신규로 업로드된 게시글만 업데이트에 포함되어 있으며, 전일 업데이트는 매일 8시에 발송됩니다.</small></p>
-    <p><small>-. 소스: https://theqoo.net/beauty</small></p>
-    <p><small>-. 참고: 다수 브랜드 언급 시 한 브랜드 결과값에만 노출됩니다 (상위 표 기준으로 노출)</small></p>
+    <p>더쿠 게시글 실시간 크롤링 결과(매일 오전 8시)</p>
+    <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 page 1~21, {today_str} (전일 크롤링 결과에 포함된 게시글 제외)</small></p>
+    <p><small>               https://theqoo.net/beauty</small></p>
+    <p><small>-. 참고: 다수 브랜드 언급된 게시글은 한 브랜드 결과 표에만 노출됩니다 (상위 표 기준으로 노출)</small></p>
     """
 
     for brand in brand_order:
