@@ -155,6 +155,12 @@ def generate_email_body_html(df):
 
     # 공통 헤더 설명
     header_html = f"""
+        <style>
+        body, table, tr, td, p, h3, span {
+            font-family: 'Nanum Gothic', '나눔고딕', sans-serif;
+        }
+    </style>
+    
     <p><strong>더쿠 브랜드 언급 게시글 크롤링 리포트</strong></p>
     <p>
         더쿠 뷰티 게시판 내에서 자사 및 경쟁사 브랜드가 언급된 게시글을 자동 수집한 데이터입니다.<br>
