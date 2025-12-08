@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-    - cron: '0 0,3,7 * * *'  # 매일 KST 09:00, 12:00, 16:00
+    - cron: '0 23 * * *'  # 한국 시간 08:00 = UTC 23:00
   workflow_dispatch:
 
 jobs:
