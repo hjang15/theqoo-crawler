@@ -194,16 +194,28 @@ def generate_email_body_html(df):
 
         body += f"<h3>{brand}</h3>"
         body += """
-        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-            <tr>
-                <th>글번호</th>
-                <th>제목</th>
-                <th>댓글수</th>
-                <th>조회수</th>
-                <th>감성</th>
-                <th>작성시간</th>
-                <th>링크</th>
-            </tr>
+        <table border="1" cellpadding="5" cellspacing="0"
+       style="border-collapse: collapse; width: 100%; table-layout: fixed;">
+
+    <colgroup>
+        <col style="width: 10%;">
+        <col style="width: 40%;">
+        <col style="width: 10%;">
+        <col style="width: 10%;">
+        <col style="width: 10%;">
+        <col style="width: 10%;">
+        <col style="width: 10%;">
+    </colgroup>
+
+    <tr>
+        <th>글번호</th>
+        <th>제목</th>
+        <th>댓글수</th>
+        <th>조회수</th>
+        <th>감성</th>
+        <th>작성시간</th>
+        <th>링크</th>
+    </tr>
         """
 
         max_title_length = 50
