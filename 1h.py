@@ -21,6 +21,7 @@ def load_seen_posts(path=SEEN_FILE):
 
 def save_seen_posts(seen_ids, path=SEEN_FILE):
     """업데이트된 글번호 set을 파일에 저장"""
+
     def sort_key(pid: str):
         # 숫자인 글번호는 숫자로 정렬, 그 외(공지 등)는 맨 뒤로
         return int(pid) if pid.isdigit() else 10**12
@@ -35,12 +36,12 @@ def detect_brand(title):
     brand_keywords = {
         '로라메르시에': ['로라 메르시에', '로라메르시에', '로라'],
         '베어미네랄': ['베어미네랄', '베어 미네랄'],
-        '아워글래스': ['아워 글래스', '아워', '아워 글라스'],
+        '아워글래스': ['아워 글래스', '아워', '아워 글라스', '아워글래스', '아워글라스'],
         '돌체앤가바나': ['돌체', '돌체앤가바나'],
         '나스': ['나스'],
         '맥': ['맥', 'MAC'],
-        '바비브라운': ['바비 브라운', '바비', '보비 브라운'],
-        '메이크업포에버': ['메이크업 포에버', '메포'],
+        '바비브라운': ['바비 브라운', '바비', '보비 브라운', '바비브라운'],
+        '메이크업포에버': ['메이크업 포에버', '메포', '메컵포에버'],
         '베네피트': ['베네피트'],
         '아르마니': ['아르마니', '알마니'],
         '지방시': ['지방시'],
@@ -48,7 +49,7 @@ def detect_brand(title):
         '프라다뷰티': ['프라다'],
         '입생로랑': ['생로랑', '입생'],
         '샤넬': ['샤넬'],
-        '디올': ['디올']
+        '디올': ['디올'],
     }
     for brand, keywords in brand_keywords.items():
         if any(keyword in title for keyword in keywords):
@@ -63,13 +64,13 @@ def detect_sentiment(title):
         '예뻐', '넘좋다', '맘에듦', '강추', '완전좋음', '만족도최고', '신세계',
         '갓템', '대존예', '취저', '이쁨', '핵좋음', '완전예쁨', '역대급', '레전드',
         '인생아이템', '넘예', '인정템', '신박하다', '기대이상', '핵만족', '예쁨주의',
-        '취향저격', '감다살'
+        '취향저격', '감다살',
     ]
     negative_words = [
         '별로', '실망', '최악', '후회', '불만', '비추', '헐', '노답', '구림',
         '별로였음', '별로다', '망함', '최악임', '다신안삼', '돈아깝', '별점1',
         '후회됨', '진심별로', '실패', '별루', '비추천', '쓰레기', '헛돈',
-        '돈버림', '구매후회', '완전별로', '진심실망', '비싸기만함', '감다뒤'
+        '돈버림', '구매후회', '완전별로', '진심실망', '비싸기만함', '감다뒤',
     ]
     if any(word in title for word in positive_words):
         return '긍정'
@@ -104,7 +105,7 @@ def crawl_theqoo(seen_posts=None):
             if no_tag and title_tag and time_tag and view_tag:
                 post_no = no_tag.get_text(strip=True)
 
-                # ✅ 이미 본 글이면 건너뛰기
+                # 이미 본 글이면 건너뛰기
                 if post_no in seen_posts:
                     continue
 
@@ -117,17 +118,19 @@ def crawl_theqoo(seen_posts=None):
 
                 if brand:
                     sentiment = detect_sentiment(title)
-                    matching_posts.append({
-                        '브랜드': brand,
-                        '글번호': post_no,
-                        '제목': title,
-                        '링크': link,
-                        '작성시간': time_str,
-                        '조회수': views,
-                        '댓글수': replies,
-                        '감성': sentiment
-                    })
-                    # ✅ 새로 본 글번호를 업데이트
+                    matching_posts.append(
+                        {
+                            '브랜드': brand,
+                            '글번호': post_no,
+                            '제목': title,
+                            '링크': link,
+                            '작성시간': time_str,
+                            '조회수': views,
+                            '댓글수': replies,
+                            '감성': sentiment,
+                        }
+                    )
+                    # 새로 본 글번호를 업데이트
                     updated_seen.add(post_no)
 
         time.sleep(1)
@@ -141,21 +144,42 @@ def generate_email_body_html(df):
         return "<p>이번에 크롤링된 게시글이 없습니다.</p>"
 
     kst = timezone(timedelta(hours=9))
-    today_str = datetime.now(kst).strftime("%Y-%m-%d %H:%M 기준")
+    기준시각_str = datetime.now(kst).strftime("%Y-%m-%d %H:%M KST 기준")
 
     brand_order = [
         '로라메르시에', '베어미네랄', '아워글래스', '돌체앤가바나',
         '나스', '맥', '바비브라운', '메이크업포에버',
         '베네피트', '아르마니', '지방시', '샬롯틸버리', '프라다뷰티', '입생로랑',
-        '샤넬', '디올'
+        '샤넬', '디올',
     ]
 
-    body = f"""
-    <p>더쿠 게시글 실시간 크롤링 결과(매일 오전 8시)</p>
-    <p><small>-. 크롤링 기준: 더쿠 뷰티 게시판 page 1~21, {today_str} (전일 크롤링 결과에 포함된 게시글 제외)</small></p>
-    <p><small>               https://theqoo.net/beauty</small></p>
-    <p><small>-. 참고: 다수 브랜드 언급된 게시글은 한 브랜드 결과 표에만 노출됩니다 (상위 표 기준으로 노출)</small></p>
+    # 공통 헤더 설명
+    header_html = f"""
+    <p><strong>더쿠 브랜드 언급 게시글 크롤링 리포트</strong></p>
+    <p>
+        더쿠 뷰티 게시판 내에서 자사 및 경쟁사 브랜드가 언급된 게시글을 자동 수집한 데이터입니다.<br>
+        본 리포트는 매일 오전 8시(KST) 기준으로 최신 게시글만 반영되며,
+        중복 데이터는 <code>seen_posts</code> 로그를 통해 자동 필터링됩니다.
+    </p>
+
+    <p>
+        <strong>◾ 크롤링 기준</strong><br>
+        - 소스 게시판: <a href="https://theqoo.net/beauty">https://theqoo.net/beauty</a><br>
+        - 수집 범위: 더쿠 뷰티 게시판 1~21페이지<br>
+        - 중복 제거: 직전 실행에서 이미 처리된 게시글(<code>seen_posts</code>) 자동 제외<br>
+        - 브랜드 매칭: 브랜드 키워드 기반 텍스트 매칭 로직 적용<br>
+        - 감성 분석: 제목 기반 단문 룰셋(Sentiment Dictionary) 적용<br>
+        <small>* 데이터 기준 시각: {기준시각_str}</small>
+    </p>
+
+    <p>
+        <strong>◾ 참고</strong><br>
+        - 한 게시글에 여러 브랜드가 언급된 경우,
+          사전에 정의된 우선순위 매핑 규칙에 따라 한 브랜드만 배정됩니다.
+    </p>
     """
+
+    body = header_html
 
     for brand in brand_order:
         df_brand = df[df['브랜드'] == brand]
@@ -178,7 +202,9 @@ def generate_email_body_html(df):
 
         max_title_length = 50
         for row in df_brand.itertuples():
-            title_short = (row.제목[:max_title_length] + '...') if len(row.제목) > max_title_length else row.제목
+            title_short = (
+                row.제목[:max_title_length] + '...' if len(row.제목) > max_title_length else row.제목
+            )
             body += f"""
             <tr>
                 <td>{row.글번호}</td>
@@ -234,13 +260,17 @@ def main():
     save_seen_posts(updated_seen)
 
     # 4) CSV 저장 + 메일 발송
-    today_str = datetime.now().strftime("%Y%m%d")
+    kst = timezone(timedelta(hours=9))
+    today_for_subject = datetime.now(kst).strftime("%Y-%m-%d")
+    today_str = datetime.now(kst).strftime("%Y%m%d")
+
     csv_file = f"theqoo_competitor_data_{today_str}.csv"
     df.to_csv(csv_file, index=False, encoding='utf-8-sig')
     print(f"✅ CSV 저장 완료: {csv_file}")
 
     html_body = generate_email_body_html(df)
-    send_gmail_email(f"[크롤링]더쿠 게시글 크롤링 결과 - {today_str}", html_body)
+    subject = f"[크롤링 리포트] 더쿠 브랜드 언급 게시글 업데이트 – {today_for_subject}"
+    send_gmail_email(subject, html_body)
 
 
 if __name__ == "__main__":
