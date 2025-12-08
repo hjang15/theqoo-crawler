@@ -153,14 +153,14 @@ def generate_email_body_html(df):
         '샤넬', '디올',
     ]
 
-    # 공통 헤더 설명
+    # 공통 헤더 설명 + 나눔고딕 폰트 적용
     header_html = f"""
-        <style>
-        body, table, tr, td, p, h3, span {
+    <style>
+        body, table, tr, td, th, p, h3, span {{
             font-family: 'Nanum Gothic', '나눔고딕', sans-serif;
-        }
+        }}
     </style>
-    
+
     <p><strong>더쿠 브랜드 언급 게시글 크롤링 리포트</strong></p>
     <p>
         더쿠 뷰티 게시판 내에서 자사 및 경쟁사 브랜드가 언급된 게시글을 자동 수집한 데이터입니다.<br>
@@ -187,41 +187,43 @@ def generate_email_body_html(df):
 
     body = header_html
 
-for brand in brand_order:
-    df_brand = df[df['브랜드'] == brand]
-    if df_brand.empty:
-        continue
+    for brand in brand_order:
+        df_brand = df[df['브랜드'] == brand]
+        if df_brand.empty:
+            continue
 
-    body += f"<h3>{brand}</h3>"
-    body += """
-    <table border="1" cellpadding="5" cellspacing="0"
-           style="border-collapse: collapse; width: 100%; table-layout: fixed;">
+        body += f"<h3>{brand}</h3>"
+        body += """
+        <table border="1" cellpadding="5" cellspacing="0"
+               style="border-collapse: collapse; width: 100%; table-layout: fixed;">
 
-        <colgroup>
-            <col style="width: 10%;">
-            <col style="width: 40%;">
-            <col style="width: 10%;">
-            <col style="width: 10%;">
-            <col style="width: 10%;">
-            <col style="width: 10%;">
-            <col style="width: 10%;">
-        </colgroup>
+            <colgroup>
+                <col style="width: 10%;">
+                <col style="width: 40%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+            </colgroup>
 
-        <tr>
-            <th>글번호</th>
-            <th>제목</th>
-            <th>댓글수</th>
-            <th>조회수</th>
-            <th>감성</th>
-            <th>작성시간</th>
-            <th>링크</th>
-        </tr>
-    """
+            <tr>
+                <th>글번호</th>
+                <th>제목</th>
+                <th>댓글수</th>
+                <th>조회수</th>
+                <th>감성</th>
+                <th>작성시간</th>
+                <th>링크</th>
+            </tr>
+        """
 
         max_title_length = 50
         for row in df_brand.itertuples():
             title_short = (
-                row.제목[:max_title_length] + '...' if len(row.제목) > max_title_length else row.제목
+                row.제목[:max_title_length] + '...'
+                if len(row.제목) > max_title_length
+                else row.제목
             )
             body += f"""
             <tr>
@@ -234,6 +236,7 @@ for brand in brand_order:
                 <td><a href="{row.링크}">바로가기</a></td>
             </tr>
             """
+
         body += "</table><br>"
 
     return body
